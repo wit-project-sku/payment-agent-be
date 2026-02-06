@@ -34,20 +34,47 @@ public class PaymentServiceImpl implements PaymentService {
   @Override
   public PaymentResponse approve(ApproveRequest request) {
 
-    TLPacket packet = gateway.approve(request);
+    final TLPacket packet;
+    try {
+      packet = gateway.approve(request);
+    } catch (Exception e) {
+      client.notifyMessage("[TL3800] " + e.getMessage());
+      log.error("[TL3800] 단말기 결제 승인 처리 중 예외 발생", e);
+      throw e;
+    }
+
+    if (packet == null) {
+      client.notifyMessage("[TL3800] gateway.approve()가 null TLPacket을 반환했습니다.");
+      throw new IllegalStateException("[TL3800] gateway.approve()가 null TLPacket을 반환했습니다.");
+    }
 
     if (packet.isFail()) {
+      client.notifyMessage("[TL3800] 결제가 승인되지 않았습니다.");
       throw new CustomException(TL3800ErrorCode.APPROVAL_DECLINED);
     }
 
-    PaymentResponse response =
-        parsePaymentResponse(
-            packet,
-            request.getPhoneNumber(),
-            request.getCustomImageUrl(),
-            request.getDelivery(),
-            request.getItems());
-    client.notifyApproveResult(response);
+    final PaymentResponse response;
+    try {
+      response =
+          parsePaymentResponse(
+              packet,
+              request.getPhoneNumber(),
+              request.getCustomImageUrl(),
+              request.getDelivery(),
+              request.getItems());
+    } catch (Exception e) {
+      client.notifyMessage("[TL3800] " + e.getMessage());
+      log.error("[TL3800] 승인 응답 파싱 중 예외 발생", e);
+      throw e;
+    }
+
+    try {
+      client.notifyMessage("[TL3800] 단말기 결제 승인 요청");
+      client.notifyApproveResult(response);
+    } catch (Exception e) {
+      client.notifyMessage("[TL3800] " + e.getMessage());
+      log.warn("[TL3800] 승인 결과 알림 전송 중 예외 발생(승인 결과는 정상 반환)", e);
+    }
 
     return response;
   }
@@ -55,14 +82,40 @@ public class PaymentServiceImpl implements PaymentService {
   @Override
   public PaymentResponse cancel(CancelRequest request) {
 
-    TLPacket packet = gateway.cancel(request);
+    final TLPacket packet;
+    try {
+      packet = gateway.cancel(request);
+    } catch (Exception e) {
+      client.notifyMessage("[TL3800] " + e.getMessage());
+      log.error("[TL3800] 단말기 결제 취소 처리 중 예외 발생", e);
+      throw e;
+    }
+
+    if (packet == null) {
+      throw new IllegalStateException("[TL3800] gateway.cancel()가 null TLPacket을 반환했습니다.");
+    }
 
     if (packet.isFail()) {
       throw new CustomException(TL3800ErrorCode.CANCEL_DECLINED);
     }
 
-    PaymentResponse response = parsePaymentResponse(packet, null, null, null, null);
-    client.notifyCancelResult(response);
+    final PaymentResponse response;
+    try {
+      response = parsePaymentResponse(packet, null, null, null, null);
+    } catch (Exception e) {
+      client.notifyMessage("[TL3800] " + e.getMessage());
+      log.error("[TL3800] 취소 응답 파싱 중 예외 발생", e);
+      throw e;
+    }
+
+    // 알림 전송 실패로 결제 취소 결과 자체가 실패로 처리되지 않도록 분리
+    try {
+      client.notifyMessage("[TL3800] 단말기 결제 취소 요청");
+      client.notifyCancelResult(response);
+    } catch (Exception e) {
+      client.notifyMessage("[TL3800] " + e.getMessage());
+      log.warn("[TL3800] 취소 결과 알림 전송 중 예외 발생(취소 결과는 정상 반환)", e);
+    }
 
     return response;
   }

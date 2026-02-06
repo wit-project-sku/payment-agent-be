@@ -56,18 +56,22 @@ public final class Proto {
     boolean printable = true;
     for (byte v : bytes) {
       int u = v & 0xFF;
-      // 공백(0x20) 또는 출력 가능 ASCII(0x21~0x7E)만 허용
-      if (!(u == 0x20 || (u >= 0x21 && u <= 0x7E))) {
+
+      // 0x00은 패딩이므로 허용
+      // 출력 가능 ASCII(0x20~0x7E)만 허용
+      if (!(u == 0x00 || (u >= 0x20 && u <= 0x7E))) {
         printable = false;
         break;
       }
     }
+
     if (printable) {
       String s = new String(bytes, StandardCharsets.US_ASCII);
-      // 우측 0x00 패딩 제거 (안전상 한 번 더 제거)
-      return s.replaceAll("\u0000+$", "");
+      // 우측 NULL 패딩 제거
+      return s.replaceAll("\u0000+$", "").trim();
     }
-    // 비-ASCII가 섞이면 HEX(대문자)로 반환
+
+    // 진짜 바이너리 데이터만 HEX로 반환
     return HexFormat.of().withUpperCase().formatHex(bytes);
   }
 }

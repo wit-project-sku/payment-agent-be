@@ -10,6 +10,8 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+import com.fazecast.jSerialComm.SerialPort;
+
 import lombok.Getter;
 
 @Getter
@@ -53,6 +55,7 @@ public class TL3800Config {
   }
 
   private String detectMacPort() {
+
     File dev = new File("/dev");
     File[] ports = dev.listFiles((dir, name) -> name.startsWith("cu.PL2303"));
 
@@ -64,17 +67,16 @@ public class TL3800Config {
   }
 
   private String detectWindowsPort() {
-    com.fazecast.jSerialComm.SerialPort[] ports =
-        com.fazecast.jSerialComm.SerialPort.getCommPorts();
 
-    for (com.fazecast.jSerialComm.SerialPort port : ports) {
+    SerialPort[] ports = SerialPort.getCommPorts();
+
+    for (SerialPort port : ports) {
       try {
         port.setBaudRate(baudRate);
         port.setNumDataBits(dataBits);
         port.setNumStopBits(stopBits);
         port.setParity(parity);
-        port.setComPortTimeouts(
-            com.fazecast.jSerialComm.SerialPort.TIMEOUT_READ_SEMI_BLOCKING, ackWaitMs, ackWaitMs);
+        port.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, ackWaitMs, ackWaitMs);
 
         if (!port.openPort()) {
           continue;

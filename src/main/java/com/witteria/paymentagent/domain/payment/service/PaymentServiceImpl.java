@@ -17,7 +17,7 @@ import com.witteria.paymentagent.global.config.TL3800Config;
 import com.witteria.paymentagent.global.exception.CustomException;
 import com.witteria.paymentagent.global.tl3800.exception.TL3800ErrorCode;
 import com.witteria.paymentagent.global.tl3800.gateway.TL3800Gateway;
-import com.witteria.paymentagent.global.tl3800.proto.TLPacket;
+import com.witteria.paymentagent.global.tl3800.packet.TLPacket;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -76,6 +76,9 @@ public class PaymentServiceImpl implements PaymentService {
 
     int pos = 0; // DATA 영역 시작 (TLPacket.data()는 순수 DATA)
 
+    System.out.println(
+        new String(packet.getData(), pos, packet.getDataLen(), StandardCharsets.US_ASCII).trim());
+
     // 거래구분코드 (1)
     pos += 1;
 
@@ -83,11 +86,11 @@ public class PaymentServiceImpl implements PaymentService {
     pos += 1;
 
     // 카드번호 (20)
-    String cardNumber = new String(packet.data(), pos, 20, StandardCharsets.US_ASCII).trim();
+    String cardNumber = new String(packet.getData(), pos, 20, StandardCharsets.US_ASCII).trim();
     pos += 20;
 
     // 승인금액 (10)
-    String totalAmountRaw = new String(packet.data(), pos, 10, StandardCharsets.US_ASCII).trim();
+    String totalAmountRaw = new String(packet.getData(), pos, 10, StandardCharsets.US_ASCII).trim();
     String totalAmount = totalAmountRaw.replaceFirst("^0+(?!$)", "");
     pos += 10;
 
@@ -101,19 +104,19 @@ public class PaymentServiceImpl implements PaymentService {
     pos += 2;
 
     // 승인번호 (12)
-    String approvalNumber = new String(packet.data(), pos, 12, StandardCharsets.US_ASCII).trim();
+    String approvalNumber = new String(packet.getData(), pos, 12, StandardCharsets.US_ASCII).trim();
     pos += 12;
 
     // 매출일자 (8)
-    String approvedDate = new String(packet.data(), pos, 8, StandardCharsets.US_ASCII).trim();
+    String approvedDate = new String(packet.getData(), pos, 8, StandardCharsets.US_ASCII).trim();
     pos += 8;
 
     // 매출시간 (6)
-    String approvedTime = new String(packet.data(), pos, 6, StandardCharsets.US_ASCII).trim();
+    String approvedTime = new String(packet.getData(), pos, 6, StandardCharsets.US_ASCII).trim();
     pos += 6;
 
     // 거래고유번호 (12)
-    String transactionId = new String(packet.data(), pos, 12, StandardCharsets.US_ASCII).trim();
+    String transactionId = new String(packet.getData(), pos, 12, StandardCharsets.US_ASCII).trim();
 
     return PaymentResponse.builder()
         .terminalId(tl3800Config.getTerminalId())

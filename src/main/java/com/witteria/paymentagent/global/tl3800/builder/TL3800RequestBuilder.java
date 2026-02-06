@@ -1,20 +1,22 @@
 /* 
  * Copyright (c) WIT Global 
  */
-package com.witteria.paymentagent.global.tl3800.request;
+package com.witteria.paymentagent.global.tl3800.builder;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
 import java.nio.ByteBuffer;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import org.springframework.stereotype.Component;
 
 import com.witteria.paymentagent.domain.payment.dto.request.ApproveRequest;
 import com.witteria.paymentagent.domain.payment.dto.request.CancelRequest;
 import com.witteria.paymentagent.global.config.TL3800Config;
+import com.witteria.paymentagent.global.tl3800.packet.TLPacket;
 import com.witteria.paymentagent.global.tl3800.proto.JobCode;
 import com.witteria.paymentagent.global.tl3800.proto.Proto;
-import com.witteria.paymentagent.global.tl3800.proto.TLPacket;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,8 +30,10 @@ public class TL3800RequestBuilder {
   public TLPacket checkDevice() {
 
     return TLPacket.builder()
-        .catOrMid(tl3800Config.getTerminalId())
+        .catOrMid("")
+        .dateTime14(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")))
         .jobCode(JobCode.A)
+        .dataLen(0)
         .data(new byte[0])
         .build();
   }
@@ -38,8 +42,10 @@ public class TL3800RequestBuilder {
   public TLPacket rebootDevice() {
 
     return TLPacket.builder()
-        .catOrMid(tl3800Config.getTerminalId())
+        .catOrMid("")
+        .dateTime14(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")))
         .jobCode(JobCode.R)
+        .dataLen(0)
         .data(new byte[0])
         .build();
   }
@@ -48,11 +54,11 @@ public class TL3800RequestBuilder {
   public TLPacket approve(ApproveRequest request) {
 
     ByteBuffer bb = ByteBuffer.allocate(30);
-    bb.put("1".getBytes(US_ASCII)); // 거래구분 1
+    bb.put("1".getBytes(US_ASCII)); // 거래구분코드 1
     bb.put(Proto.asciiLeftPadZero(request.getTotalAmount(), 10)); // 금액(10)
-    bb.put(Proto.asciiLeftPadZero("", 8)); // 부가세(8)
+    bb.put(Proto.asciiLeftPadZero("", 8)); // 세금(8)
     bb.put(Proto.asciiLeftPadZero("", 8)); // 봉사료(8)
-    bb.put(Proto.asciiLeftPadZero("", 2)); // 할부(2)
+    bb.put(Proto.asciiLeftPadZero("", 2)); // 할부개월(2)
     bb.put("1".getBytes(US_ASCII)); // 서명여부(1)
 
     bb.flip();
@@ -61,7 +67,9 @@ public class TL3800RequestBuilder {
 
     return TLPacket.builder()
         .catOrMid(tl3800Config.getTerminalId())
+        .dateTime14(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")))
         .jobCode(JobCode.B)
+        .dataLen(30)
         .data(payload)
         .build();
   }
@@ -97,13 +105,15 @@ public class TL3800RequestBuilder {
             + normOriginalTime // 6
             + extraLenStr; // 2
 
-    System.out.println(cancelTxt);
+    System.out.println("취소: " + cancelTxt);
 
     byte[] data = cancelTxt.getBytes(US_ASCII);
 
     return TLPacket.builder()
-        .catOrMid(tl3800Config.getTerminalId())
+        .catOrMid("")
+        .dateTime14(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")))
         .jobCode(JobCode.C)
+        .dataLen(57)
         .data(data)
         .build();
   }

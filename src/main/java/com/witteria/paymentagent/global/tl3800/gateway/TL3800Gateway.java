@@ -10,9 +10,10 @@ import org.springframework.stereotype.Component;
 
 import com.witteria.paymentagent.domain.payment.dto.request.ApproveRequest;
 import com.witteria.paymentagent.domain.payment.dto.request.CancelRequest;
+import com.witteria.paymentagent.global.tl3800.builder.TL3800RequestBuilder;
 import com.witteria.paymentagent.global.tl3800.client.TL3800Client;
-import com.witteria.paymentagent.global.tl3800.proto.TLPacket;
-import com.witteria.paymentagent.global.tl3800.request.TL3800RequestBuilder;
+import com.witteria.paymentagent.global.tl3800.packet.TLPacket;
+import com.witteria.paymentagent.global.tl3800.transport.TLTransport;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,20 +26,31 @@ public class TL3800Gateway {
   private final TL3800Client client;
   private final TL3800RequestBuilder requestBuilder;
   private final ReentrantLock lock = new ReentrantLock(true);
+  private final TLTransport transport;
 
-  private TLPacket call(Supplier<TLPacket> supplier) {
+  public TLPacket call(Supplier<TLPacket> supplier) {
 
     lock.lock();
     try {
-      client.open();
-      return client.requestResponse(supplier.get());
+      // 1. 포트 열기 (열려 있으면 무시)
+      transport.open();
+
+      // 2. 입력 버퍼 드레인 (이전 잔류 데이터 제거)
+      transport.drainInputBuffer(250);
+
+      // 3. 요청 패킷 생성
+      TLPacket requestPacket = supplier.get();
+
+      // 4. 요청 전송 및 응답 처리
+      return client.requestResponse(requestPacket);
     } catch (Exception e) {
+      log.error("[TL3800] 통신 실패", e);
       throw new RuntimeException("TL3800 통신 실패", e);
     } finally {
       try {
-        client.close();
+        transport.close(); // ★ 반드시 닫기
       } catch (Exception e) {
-        log.warn("TL3800 client close failed", e);
+        log.warn("[TL3800] 포트 종료 실패", e);
       }
       lock.unlock();
     }

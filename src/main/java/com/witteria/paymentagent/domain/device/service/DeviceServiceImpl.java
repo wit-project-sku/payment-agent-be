@@ -10,7 +10,7 @@ import com.witteria.paymentagent.domain.device.mapper.PacketMapper;
 import com.witteria.paymentagent.global.exception.CustomException;
 import com.witteria.paymentagent.global.tl3800.exception.TL3800ErrorCode;
 import com.witteria.paymentagent.global.tl3800.gateway.TL3800Gateway;
-import com.witteria.paymentagent.global.tl3800.proto.TLPacket;
+import com.witteria.paymentagent.global.tl3800.packet.TLPacket;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

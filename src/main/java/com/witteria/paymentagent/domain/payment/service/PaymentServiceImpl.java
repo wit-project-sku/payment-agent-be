@@ -69,7 +69,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     try {
-      client.notifyMessage("[TL3800] 단말기 결제 승인 요청");
+      client.notifyMessage("[TL3800] 단말기 결제 승인 요청 성공");
       client.notifyApproveResult(response);
     } catch (Exception e) {
       client.notifyMessage("[TL3800] " + e.getMessage());
@@ -110,7 +110,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     // 알림 전송 실패로 결제 취소 결과 자체가 실패로 처리되지 않도록 분리
     try {
-      client.notifyMessage("[TL3800] 단말기 결제 취소 요청");
+      client.notifyMessage("[TL3800] 단말기 결제 취소 요청 성공");
       client.notifyCancelResult(response);
     } catch (Exception e) {
       client.notifyMessage("[TL3800] " + e.getMessage());

@@ -36,7 +36,7 @@ public class DeviceServiceImpl implements DeviceService {
         throw new CustomException(TL3800ErrorCode.DEVICE_CHECK_FAILED);
       }
 
-      client.notifyMessage("[TL3800] 단말기 상태 체크");
+      client.notifyMessage("[TL3800] 단말기 상태 체크 성공");
       return packetMapper.toPacketResponse(packet);
     } catch (CustomException e) {
       client.notifyMessage("[TL3800] " + e.getMessage());
@@ -59,7 +59,7 @@ public class DeviceServiceImpl implements DeviceService {
         throw new CustomException(TL3800ErrorCode.DEVICE_REBOOT_FAILED);
       }
 
-      client.notifyMessage("[TL3800] 단말기 재시작");
+      client.notifyMessage("[TL3800] 단말기 재시작 성공");
       return packetMapper.toPacketResponse(packet);
     } catch (CustomException e) {
       client.notifyMessage("[TL3800] " + e.getMessage());

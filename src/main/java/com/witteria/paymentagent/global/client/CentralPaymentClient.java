@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import com.witteria.paymentagent.domain.payment.dto.response.PaymentResponse;
+import com.witteria.paymentagent.global.response.TL3800Response;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,7 +52,12 @@ public class CentralPaymentClient {
   public void notifyMessage(String message) {
 
     try {
-      centralApiClient.post().uri("/api/devices").body(message).retrieve().toBodilessEntity();
+      centralApiClient
+          .post()
+          .uri("/api/devices")
+          .body(TL3800Response.builder().message(message).build())
+          .retrieve()
+          .toBodilessEntity();
     } catch (Exception e) {
       log.error("[중앙서버 통보 실패 - 오류] 오류메세지={}", message, e);
     }

@@ -3,7 +3,6 @@
  */
 package com.witteria.paymentagent.global.tl3800.gateway;
 
-import com.witteria.paymentagent.global.client.CentralPaymentClient;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.witteria.paymentagent.domain.payment.dto.request.ApproveRequest;
 import com.witteria.paymentagent.domain.payment.dto.request.CancelRequest;
+import com.witteria.paymentagent.global.client.CentralPaymentClient;
 import com.witteria.paymentagent.global.tl3800.builder.TL3800RequestBuilder;
 import com.witteria.paymentagent.global.tl3800.client.TL3800Client;
 import com.witteria.paymentagent.global.tl3800.packet.TLPacket;
